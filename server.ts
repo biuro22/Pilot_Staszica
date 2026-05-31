@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { WebUser, ActivityLog, GateStatus, PushSubscriptionInfo } from './src/types';
 import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 dotenv.config();
 
@@ -121,8 +122,8 @@ try {
 }
 
 const dbInstance = firebaseConfig.firestoreDatabaseId 
-  ? admin.firestore(firebaseConfig.firestoreDatabaseId)
-  : admin.firestore();
+  ? getFirestore(undefined, firebaseConfig.firestoreDatabaseId)
+  : getFirestore();
 
 // Helper functions for Database and Config pointing to Firestore
 async function readDb() {
