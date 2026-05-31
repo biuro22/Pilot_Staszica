@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a registered gate-control remote user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "plotNumber": { "type": "string" },
+        "passcode": { "type": "string" },
+        "role": { "type": "string", "enum": ["dzialkowiec", "gosc", "admin"] },
+        "status": { "type": "string", "enum": ["active", "blocked"] },
+        "blockReason": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "mustChangePin": { "type": "boolean" },
+        "suplaAccessToken": { "type": "string" }
+      },
+      "required": ["id", "name", "plotNumber", "passcode", "role", "status", "createdAt"]
+    },
+    "Log": {
+      "title": "Log",
+      "description": "Represents an activity log entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userName": { "type": "string" },
+        "userRole": { "type": "string", "enum": ["dzialkowiec", "gosc", "admin", "system"] },
+        "action": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "userName", "userRole", "action", "details"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "Represents a user's push notification subscription",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userName": { "type": "string" },
+        "deviceInfo": { "type": "string" },
+        "subscribedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userName", "deviceInfo", "subscribedAt"]
+    },
+    "PinResetRequest": {
+      "title": "PinResetRequest",
+      "description": "Represents a user's request to reset their PIN key",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "plotNumber": { "type": "string" },
+        "contactDetails": { "type": "string" },
+        "requestedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "plotNumber", "contactDetails", "requestedAt"]
+    },
+    "GateState": {
+      "title": "GateState",
+      "description": "Represents the status and connection properties of the gate",
+      "type": "object",
+      "properties": {
+        "state": { "type": "string", "enum": ["OPEN", "CLOSED", "OPENING", "CLOSING"] },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "suplaConnected": { "type": "boolean" },
+        "suplaServerUrl": { "type": "string" },
+        "channelId": { "type": "string" },
+        "sensorChannelId": { "type": "string" },
+        "lastActionBy": { "type": "string" },
+        "invertSensor": { "type": "boolean" },
+        "lastTriggeredTime": { "type": "number" },
+        "lastTriggeredAction": { "type": "string" }
+      },
+      "required": ["state", "lastUpdated", "suplaConnected", "suplaServerUrl", "channelId", "sensorChannelId", "lastActionBy"]
+    },
+    "SystemConfig": {
+      "title": "SystemConfig",
+      "description": "Main configurations of the panel",
+      "type": "object",
+      "properties": {
+        "suplaAccessToken": { "type": "string" },
+        "adminPassword": { "type": "string" },
+        "googleScriptUrl": { "type": "string" },
+        "lockSchedule": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "startDateTime": { "type": "string" },
+            "endDateTime": { "type": "string" },
+            "reason": { "type": "string" }
+          },
+          "required": ["enabled", "startDateTime", "endDateTime", "reason"]
+        }
+      },
+      "required": ["suplaAccessToken", "adminPassword", "lockSchedule"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Authorized gate users"
+    },
+    "/logs/{logId}": {
+      "schema": { "$ref": "#/entities/Log" },
+      "description": "System activity logs"
+    },
+    "/subscriptions/{subId}": {
+      "schema": { "$ref": "#/entities/Subscription" },
+      "description": "Push notification subscriptions"
+    },
+    "/pinResetRequests/{requestId}": {
+      "schema": { "$ref": "#/entities/PinResetRequest" },
+      "description": "PIN reset applications"
+    },
+    "/gateState/{stateId}": {
+      "schema": { "$ref": "#/entities/GateState" },
+      "description": "Live status of the gate (document is 'main')"
+    },
+    "/config/{configId}": {
+      "schema": { "$ref": "#/entities/SystemConfig" },
+      "description": "Global settings and credentials (document is 'settings')"
+    }
+  }
+}

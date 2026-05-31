@@ -1,0 +1,6 @@
+{
+  "name": "Pilot do Bramy - Ogrody Stara Huta",
+  "description": "System sterowania bramą dla Ogrodów Stara Huta z zarządzaniem dostępem i powiadomieniami.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
