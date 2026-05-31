@@ -132,7 +132,15 @@ async function readDb() {
     const usersSnap = await dbInstance.collection('users').get();
     const users: any[] = [];
     usersSnap.forEach((doc: any) => {
-      users.push({ id: doc.id, ...doc.data() });
+      const uData = doc.data();
+      let plotNumber = uData.plotNumber;
+      if (!plotNumber && uData.name) {
+        const match = uData.name.match(/(?:działka|dzialka|działki|dzialki|pokój|pokoj|pokoju)\s*(\d+)/i) || uData.name.match(/(\d+)/);
+        if (match) {
+          plotNumber = match[1];
+        }
+      }
+      users.push({ id: doc.id, ...uData, plotNumber: plotNumber || '' });
     });
 
     // 2. Fetch logs (order by timestamp desc, limit 500)
@@ -264,7 +272,20 @@ async function readDb() {
     try {
       if (fs.existsSync(DB_FILE)) {
         const localDbRaw = fs.readFileSync(DB_FILE, 'utf-8');
-        return JSON.parse(localDbRaw);
+        const db = JSON.parse(localDbRaw);
+        if (db && Array.isArray(db.users)) {
+          db.users = db.users.map((u: any) => {
+            let plotNumber = u.plotNumber;
+            if (!plotNumber && u.name) {
+              const match = u.name.match(/(?:działka|dzialka|działki|dzialki|pokój|pokoj|pokoju)\s*(\d+)/i) || u.name.match(/(\d+)/);
+              if (match) {
+                plotNumber = match[1];
+              }
+            }
+            return { ...u, plotNumber: plotNumber || '' };
+          });
+        }
+        return db;
       }
     } catch (fsErr) {
       console.error('Failed to read fallback local file db.json:', fsErr);
