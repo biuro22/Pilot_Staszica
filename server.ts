@@ -260,7 +260,15 @@ async function readDb() {
       }
     };
   } catch (error) {
-    console.error('Error reading from Firestore', error);
+    console.error('Error reading from Firestore, falling back to local file db.json:', error);
+    try {
+      if (fs.existsSync(DB_FILE)) {
+        const localDbRaw = fs.readFileSync(DB_FILE, 'utf-8');
+        return JSON.parse(localDbRaw);
+      }
+    } catch (fsErr) {
+      console.error('Failed to read fallback local file db.json:', fsErr);
+    }
     return {
       users: [],
       logs: [],
@@ -285,6 +293,13 @@ async function readDb() {
 }
 
 async function writeDb(data: any) {
+  // Always write to local backup/fallback file first
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (fsErr) {
+    console.error('Failed to write local backup file db.json:', fsErr);
+  }
+
   try {
     const batch = dbInstance.batch();
 
