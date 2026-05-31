@@ -1404,7 +1404,7 @@ app.post('/api/admin/push/broadcast', async (req, res) => {
 async function startServer() {
   // Determine if we are running in the compiled production bundle
   const isProd = process.env.NODE_ENV === 'production' || 
-                 __filename.includes('dist') || 
+                 (typeof __filename !== 'undefined' && __filename.includes('dist')) || 
                  (typeof __dirname !== 'undefined' && __dirname.includes('dist'));
 
   if (!isProd) {
