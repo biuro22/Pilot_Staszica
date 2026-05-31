@@ -3,6 +3,7 @@
     {
       "id": "u1",
       "name": "Jan Kowalski (Działka 15)",
+      "plotNumber": "15",
       "passcode": "1234",
       "role": "dzialkowiec",
       "status": "active",
@@ -12,6 +13,7 @@
     {
       "id": "u2",
       "name": "Marek Nowak (Działka 88)",
+      "plotNumber": "88",
       "passcode": "5678",
       "role": "dzialkowiec",
       "status": "active",
@@ -21,6 +23,7 @@
     {
       "id": "u3",
       "name": "Zofia Malicka (Gość - Pokój 3)",
+      "plotNumber": "3",
       "passcode": "gosc1",
       "role": "gosc",
       "status": "active",
@@ -30,6 +33,7 @@
     {
       "id": "u4",
       "name": "Tomasz Adamski (Działka 102)",
+      "plotNumber": "102",
       "passcode": "9999",
       "role": "dzialkowiec",
       "status": "blocked",
@@ -38,6 +42,7 @@
     },
     {
       "name": "Marek działka 227",
+      "plotNumber": "227",
       "passcode": "3333",
       "role": "admin",
       "status": "active",
