@@ -105,6 +105,7 @@ async function addClientLogDirectly(googleScriptUrl: string, userName: string, a
   try {
     await fetch(googleScriptUrl, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'addLog',
@@ -391,9 +392,10 @@ if (isStaticMode) {
 
                 if (proxyRes.ok) {
                   const proxyPayload = await proxyRes.json();
-                  if (proxyPayload.status >= 200 && proxyPayload.status < 300) {
+                  const proxyStatus = proxyPayload.proxyStatus || (proxyPayload.status === 'success' ? 200 : 500);
+                  if (proxyStatus >= 200 && proxyStatus < 300) {
                     try {
-                      responseBody = JSON.parse(proxyPayload.body);
+                      responseBody = JSON.parse(proxyPayload.proxyBody || '{}');
                       responseOk = true;
                     } catch (e) {
                       console.error('[Static Client] Failed to parse proxy SUPLA response body:', e);
@@ -414,9 +416,10 @@ if (isStaticMode) {
                   });
                   if (proxyRes2.ok) {
                     const proxyPayload2 = await proxyRes2.json();
-                    if (proxyPayload2.status >= 200 && proxyPayload2.status < 300) {
+                    const proxyStatus2 = proxyPayload2.proxyStatus || (proxyPayload2.status === 'success' ? 200 : 500);
+                    if (proxyStatus2 >= 200 && proxyStatus2 < 300) {
                       try {
-                        responseBody = JSON.parse(proxyPayload2.body);
+                        responseBody = JSON.parse(proxyPayload2.proxyBody || '{}');
                         responseOk = true;
                       } catch (e) {
                         console.error('[Static Client] Failed to parse proxy SUPLA (v2) response body:', e);
@@ -552,9 +555,9 @@ if (isStaticMode) {
 
                     if (proxyRes.ok) {
                       const proxyPayload = await proxyRes.json();
-                      responseStatus = proxyPayload.status;
-                      responseOk = (proxyPayload.status >= 200 && proxyPayload.status < 300);
-                      responseText = proxyPayload.body || '';
+                      responseStatus = proxyPayload.proxyStatus || (proxyPayload.status === 'success' ? 200 : 500);
+                      responseOk = (responseStatus >= 200 && responseStatus < 300);
+                      responseText = proxyPayload.proxyBody || '';
                     } else {
                       responseStatus = proxyRes.status;
                       responseText = 'Proxy request failed';
