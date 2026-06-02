@@ -105,7 +105,7 @@ async function addClientLogDirectly(googleScriptUrl: string, userName: string, a
   try {
     await fetch(googleScriptUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'addLog',
         user: userName,
@@ -274,7 +274,7 @@ if (isStaticMode) {
           const body = JSON.parse(init?.body as string || '{}');
           const response = await originalFetch(googleScriptUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'saveUser', ...body })
           });
           if (response.ok) {
@@ -292,7 +292,7 @@ if (isStaticMode) {
           const body = JSON.parse(init?.body as string || '{}');
           const response = await originalFetch(googleScriptUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'deleteUser', plotNumber: body.plotNumber })
           });
           if (response.ok) {
@@ -327,7 +327,7 @@ if (isStaticMode) {
 
           const response = await originalFetch(googleScriptUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'saveSettings', partyMode })
           });
 
@@ -380,7 +380,7 @@ if (isStaticMode) {
                 // Proxy via Google Apps Script to bypass browser CORS constraints
                 const proxyRes = await originalFetch(googleScriptUrl, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 'Content-Type': 'text/plain' },
                   body: JSON.stringify({
                     action: 'proxySupla',
                     url: suplaUrl1,
@@ -404,7 +404,7 @@ if (isStaticMode) {
                 if (!responseOk) {
                   const proxyRes2 = await originalFetch(googleScriptUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({
                       action: 'proxySupla',
                       url: suplaUrl2,
@@ -540,7 +540,7 @@ if (isStaticMode) {
                     // Proxy SUPLA trigger command via Google Apps Script to bypass browser CORS constraints
                     const proxyRes = await originalFetch(googleScriptUrl, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: { 'Content-Type': 'text/plain' },
                       body: JSON.stringify({
                         action: 'proxySupla',
                         url: ep.url,
