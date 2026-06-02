@@ -284,6 +284,39 @@ function doPost(e) {
       return jsonResponse({ status: "success", message: "Zalogowano pomyślnie w arkuszu." });
     }
     
+    // ACTION: proxySupla (Server-side proxy bypass to handle browser CORS requirements against SUPLA endpoints)
+    else if (action === "proxySupla") {
+      const targetUrl = data.url;
+      const method = data.method || "GET";
+      const token = data.token;
+      const bodyPayload = data.body;
+      
+      const headers = {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/json"
+      };
+      
+      const options = {
+        "method": method,
+        "headers": headers,
+        "muteHttpExceptions": true
+      };
+      
+      if (bodyPayload) {
+        options.contentType = "application/json";
+        options.payload = JSON.stringify(bodyPayload);
+      }
+      
+      const response = UrlFetchApp.fetch(targetUrl, options);
+      const resCode = response.getResponseCode();
+      const resText = response.getContentText();
+      
+      return jsonResponse({
+        status: resCode,
+        body: resText
+      });
+    }
+    
     // ACTION: saveSettings
     else if (action === "saveSettings") {
       const sheet = ss.getSheetByName("Ustawienia");

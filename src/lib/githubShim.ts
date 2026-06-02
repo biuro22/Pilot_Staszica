@@ -370,24 +370,86 @@ if (isStaticMode) {
           if (token && settings.suplaServerUrl && checkChannel) {
             try {
               const rootUrl = settings.suplaServerUrl.replace(/\/$/, '');
-              let response = await originalFetch(`${rootUrl}/api/v3/channels/${checkChannel}?include=state`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Accept': 'application/json'
-                }
-              });
+              const suplaUrl1 = `${rootUrl}/api/v3/channels/${checkChannel}?include=state`;
+              const suplaUrl2 = `${rootUrl}/api/v2.3.0/channels/${checkChannel}?include=state`;
+              
+              let responseBody: any = null;
+              let responseOk = false;
 
-              if (!response.ok) {
-                response = await originalFetch(`${rootUrl}/api/v2.3.0/channels/${checkChannel}?include=state`, {
+              if (googleScriptUrl) {
+                // Proxy via Google Apps Script to bypass browser CORS constraints
+                const proxyRes = await originalFetch(googleScriptUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'proxySupla',
+                    url: suplaUrl1,
+                    method: 'GET',
+                    token: token
+                  })
+                });
+
+                if (proxyRes.ok) {
+                  const proxyPayload = await proxyRes.json();
+                  if (proxyPayload.status >= 200 && proxyPayload.status < 300) {
+                    try {
+                      responseBody = JSON.parse(proxyPayload.body);
+                      responseOk = true;
+                    } catch (e) {
+                      console.error('[Static Client] Failed to parse proxy SUPLA response body:', e);
+                    }
+                  }
+                }
+
+                if (!responseOk) {
+                  const proxyRes2 = await originalFetch(googleScriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      action: 'proxySupla',
+                      url: suplaUrl2,
+                      method: 'GET',
+                      token: token
+                    })
+                  });
+                  if (proxyRes2.ok) {
+                    const proxyPayload2 = await proxyRes2.json();
+                    if (proxyPayload2.status >= 200 && proxyPayload2.status < 300) {
+                      try {
+                        responseBody = JSON.parse(proxyPayload2.body);
+                        responseOk = true;
+                      } catch (e) {
+                        console.error('[Static Client] Failed to parse proxy SUPLA (v2) response body:', e);
+                      }
+                    }
+                  }
+                }
+              } else {
+                // Fallback direct call (might fail due to browser CORS, but useful as offline fallback)
+                let response = await originalFetch(suplaUrl1, {
                   headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
                   }
                 });
+
+                if (!response.ok) {
+                  response = await originalFetch(suplaUrl2, {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Accept': 'application/json'
+                    }
+                  });
+                }
+                
+                if (response.ok) {
+                  responseBody = await response.json();
+                  responseOk = true;
+                }
               }
 
-              if (response.ok) {
-                const sData = await response.json();
+              if (responseOk && responseBody) {
+                const sData = responseBody;
                 const sensorOn = sData.state?.hi || sData.state?.on || false;
 
                 let physicalState: 'OPEN' | 'CLOSED' = sensorOn ? 'OPEN' : 'CLOSED';
@@ -406,7 +468,7 @@ if (isStaticMode) {
                 }
               }
             } catch (err) {
-              console.error('[Static Client] Direct SUPLA fetch error:', err);
+              console.error('[Static Client] SUPLA fetch error:', err);
             }
           }
 
@@ -470,24 +532,57 @@ if (isStaticMode) {
             for (const cmd of commandsToTry) {
               for (const ep of endpointsToTry) {
                 try {
-                  const response = await originalFetch(ep.url, {
-                    method: ep.method,
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ action: cmd })
-                  });
+                  let responseOk = false;
+                  let responseStatus = 0;
+                  let responseText = '';
 
-                  lastStatus = response.status;
-                  if (response.ok) {
+                  if (googleScriptUrl) {
+                    // Proxy SUPLA trigger command via Google Apps Script to bypass browser CORS constraints
+                    const proxyRes = await originalFetch(googleScriptUrl, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        action: 'proxySupla',
+                        url: ep.url,
+                        method: ep.method,
+                        token: token,
+                        body: { action: cmd }
+                      })
+                    });
+
+                    if (proxyRes.ok) {
+                      const proxyPayload = await proxyRes.json();
+                      responseStatus = proxyPayload.status;
+                      responseOk = (proxyPayload.status >= 200 && proxyPayload.status < 300);
+                      responseText = proxyPayload.body || '';
+                    } else {
+                      responseStatus = proxyRes.status;
+                      responseText = 'Proxy request failed';
+                    }
+                  } else {
+                    // Direct browser call fallback (fails due to CORS in general)
+                    const response = await originalFetch(ep.url, {
+                      method: ep.method,
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                      },
+                      body: JSON.stringify({ action: cmd })
+                    });
+                    responseStatus = response.status;
+                    responseOk = response.ok;
+                    responseText = await response.text().catch(() => 'brak szczegółów');
+                  }
+
+                  lastStatus = responseStatus;
+                  if (responseOk) {
                     success = true;
                     suplaTriggered = true;
-                    suplaDetails = `Wysłano poprawny sygnał do SUPLA: ${cmd} za pomocą ${ep.method} (GitHub Pages).`;
+                    suplaDetails = `Wysłano poprawny sygnał do SUPLA: ${cmd} za pomocą ${ep.method} (GitHub Pages Proxy).`;
                     break;
                   } else {
-                    lastErrorText = await response.text().catch(() => 'brak szczegółów');
+                    lastErrorText = responseText;
                   }
                 } catch (err: any) {
                   lastErrorText = err.message || String(err);
@@ -497,7 +592,7 @@ if (isStaticMode) {
             }
 
             if (!success) {
-              suplaDetails = `Błąd SUPLA (status: ${lastStatus}, ${lastErrorText}). Tryb rezerwowy aktywowany.`;
+              suplaDetails = `Błąd SUPLA przez Proxy (status: ${lastStatus}, ${lastErrorText}). Tryb rezerwowy aktywowany.`;
             }
           }
 
