@@ -6,7 +6,6 @@ import {
   ArrowDownCircle, 
   Clock, 
   Shield, 
-  Bell, 
   User, 
   RefreshCw, 
   Layers, 
@@ -19,7 +18,6 @@ import {
 } from 'lucide-react';
 import { GateStatus } from '../types';
 import ContactAuthor from './ContactAuthor';
-import NotificationSettings from './NotificationSettings';
 
 interface GateControlProps {
   user: { id: string; name: string; role: 'dzialkowiec' | 'gosc' | 'admin'; suplaAccessToken?: string };
@@ -46,7 +44,11 @@ export default function GateControl({ user, onLogout, onOpenAdminPanel }: GateCo
   // Fetch gate status functions (passing userId query param)
   const fetchGateStatus = async () => {
     try {
-      const res = await fetch(`/api/gate/status?userId=${user.id}`);
+      const res = await fetch(`/api/gate/status?userId=${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${user.suplaAccessToken || ''}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setGate(data);
@@ -78,6 +80,7 @@ export default function GateControl({ user, onLogout, onOpenAdminPanel }: GateCo
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.suplaAccessToken || ''}`
         },
         body: JSON.stringify({
           action,
@@ -271,11 +274,6 @@ export default function GateControl({ user, onLogout, onOpenAdminPanel }: GateCo
             <span>{actionError}</span>
           </div>
         )}
-      </div>
-
-      {/* Push notifications box */}
-      <div className="mb-6">
-        <NotificationSettings userName={user.name} />
       </div>
 
       {/* Required Contact + Author credits */}

@@ -445,44 +445,23 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" id="login-form">
-          {/* Imię i Nazwisko Row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="block text-[10.5px] uppercase font-extrabold tracking-widest text-emerald-800 dark:text-zinc-500">
-                Imię
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600/70 dark:text-zinc-550">
-                  <User className="w-3.5 h-3.5" />
-                </span>
-                <input
-                  type="text"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="np. Jan"
-                  className="w-full py-3 pl-9 pr-2 bg-emerald-50/20 dark:bg-zinc-900/95 border border-emerald-100/60 dark:border-zinc-805 rounded-2xl focus:border-emerald-500 dark:focus:border-emerald-450 focus:ring-4 focus:ring-emerald-500/10 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-zinc-500 text-xs focus:outline-none transition-all shadow-inner"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-[10.5px] uppercase font-extrabold tracking-widest text-emerald-800 dark:text-zinc-500">
-                Nazwisko
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600/70 dark:text-zinc-550">
-                  <User className="w-3.5 h-3.5" />
-                </span>
-                <input
-                  type="text"
-                  required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="np. Kowalski"
-                  className="w-full py-3 pl-9 pr-2 bg-emerald-50/20 dark:bg-zinc-900/95 border border-emerald-100/60 dark:border-zinc-805 rounded-2xl focus:border-emerald-500 dark:focus:border-emerald-450 focus:ring-4 focus:ring-emerald-500/10 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-zinc-550 text-xs focus:outline-none transition-all shadow-inner"
-                />
-              </div>
+          {/* Imię (Nazwisko zostało usunięte) */}
+          <div className="space-y-1.5">
+            <label className="block text-[10.5px] uppercase font-extrabold tracking-widest text-emerald-800 dark:text-zinc-500">
+              Imię
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600/70 dark:text-zinc-550">
+                <User className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="np. Jan"
+                className="w-full py-3 pl-10 pr-3 bg-emerald-50/20 dark:bg-zinc-900/95 border border-emerald-100/60 dark:border-zinc-805 rounded-2xl focus:border-emerald-500 dark:focus:border-emerald-450 focus:ring-4 focus:ring-emerald-500/10 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-zinc-550 text-xs focus:outline-none transition-all shadow-inner"
+              />
             </div>
           </div>
 

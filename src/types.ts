@@ -1,14 +1,19 @@
 export interface WebUser {
-  id: string;
+  id?: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   plotNumber?: string;
-  passcode: string;
+  passcode?: string;
+  pin?: string;
+  token?: string;
   role: 'dzialkowiec' | 'gosc' | 'admin';
   status: 'active' | 'blocked';
   blockReason: string;
-  createdAt: string;
+  createdAt?: string;
   suplaAccessToken?: string;
   mustChangePin?: boolean;
+  suplaName?: string;
 }
 
 export interface PinResetRequest {

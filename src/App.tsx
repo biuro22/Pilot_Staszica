@@ -1,19 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, ArrowUp } from 'lucide-react';
 import Login from './components/Login';
 import GateControl from './components/GateControl';
 import AdminPanel from './components/AdminPanel';
+import StaticConfigPanel from './components/StaticConfigPanel';
+import { isStaticMode } from './lib/githubShim';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<{ id: string; name: string; role: 'dzialkowiec' | 'gosc' | 'admin'; suplaAccessToken?: string } | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
   // Tryb jasny / ciemny (Light/Dark mode)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('ogrody_gate_theme');
     return (saved === 'light' || saved === 'dark') ? saved : 'dark';
   });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 220) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -79,19 +103,39 @@ export default function App() {
         </button>
       </div>
 
-      <div className="py-6 min-h-screen">
-        {currentUser === null ? (
-          <Login onLoginSuccess={handleLogin} />
-        ) : currentUser.role === 'admin' && showAdminPanel ? (
-          <AdminPanel user={currentUser} onLogout={handleLogout} onBackToRemote={() => setShowAdminPanel(false)} />
-        ) : (
-          <GateControl 
-            user={currentUser} 
-            onLogout={handleLogout} 
-            onOpenAdminPanel={currentUser.role === 'admin' ? () => setShowAdminPanel(true) : undefined} 
-          />
+      <div className="py-6 min-h-screen flex flex-col justify-between">
+        <div>
+          {currentUser === null ? (
+            <Login onLoginSuccess={handleLogin} />
+          ) : currentUser.role === 'admin' && showAdminPanel ? (
+            <AdminPanel user={currentUser} onLogout={handleLogout} onBackToRemote={() => setShowAdminPanel(false)} />
+          ) : (
+            <GateControl 
+              user={currentUser} 
+              onLogout={handleLogout} 
+              onOpenAdminPanel={currentUser.role === 'admin' ? () => setShowAdminPanel(true) : undefined} 
+            />
+          )}
+        </div>
+
+        {isStaticMode && (
+          <div className="mt-8 pb-6">
+            <StaticConfigPanel />
+          </div>
         )}
       </div>
+
+      {/* Przycisk powrotu na samą górę strony (pływająca przezroczysta strzałka) */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 p-3 bg-white/75 dark:bg-zinc-900/60 text-stone-750 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 border border-stone-200/50 dark:border-zinc-800/80 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_24px_rgba(16,185,129,0.15)] hover:bg-white dark:hover:bg-zinc-850 cursor-pointer transition-all duration-300 active:scale-90 flex items-center justify-center animate-fade-in hover:border-emerald-500/20"
+          title="Powrót na górę"
+          id="scroll-to-top-btn"
+        >
+          <ArrowUp className="w-5 h-5 animate-pulse" />
+        </button>
+      )}
     </div>
   );
 }
